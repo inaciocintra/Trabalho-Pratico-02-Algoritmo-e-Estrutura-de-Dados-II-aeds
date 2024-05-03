@@ -139,7 +139,7 @@ bool read_boolean(int *i, const char *csvLine) {
     char* wordRead = read_string(i, csvLine);
 
     if (wordRead != NULL) {
-        if (strcmp(wordRead, "VERDADEIRO") == 0)
+        if (wordRead[0] == 'V')
             predicate = true;
         free(wordRead);
     }
@@ -189,7 +189,7 @@ Character* csvLine_mapper(char *csvLine) {
     character->gender = read_string(&i, csvLine);
     character->hairColour = read_string(&i, csvLine);
     character->isWizard = read_boolean(&i, csvLine);
-
+    
     return character; 
 }
 
@@ -238,32 +238,54 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
+void selection_sort_by_name(Character **characters, int count) {
+    for (int i = 0; i < count - 1; i++) {
+        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
+        int minIndex = i;
+        for (int j = i + 1; j < count; j++) {
+            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
+                minIndex = j;
+            }
+        }
+        // Troca o personagem com o menor nome com o personagem em i
+        if (minIndex != i) {
+            Character *temp = characters[i];
+            characters[i] = characters[minIndex];
+            characters[minIndex] = temp;
+        }
+    }
+}
+
+// Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
     // Abre o arquivo CSV para leitura
-    FILE *file = fopen(FILE_PATH, "r");
-    if (file == NULL) {
-        perror("File not found exception.");
-        return 1;
-    }
+    
 
     // Inicializa um array de personagens com alocação dinâmica
     int characterCapacity = INITIAL_ARRAY_CAPACITY;
     int characterCount = 0;
     Character **characterArray = (Character **)malloc(characterCapacity * sizeof(Character *));
-    if (characterArray == NULL) {
-        perror("Memory allocation error for character array");
-        fclose(file);
-        return 1;
-    }
-
     char line[256];
-    // Lê a linha de cabeçalho (ignorada neste exemplo)
-    fgets(line, sizeof(line), file);
+    char codigo[37];
+    scanf("%s",codigo);   
 
+    // Lê a linha de cabeçalho (ignorada neste exemplo)
+    while (strcmp(codigo,"FIM")!=0)
+    {
+      FILE *file = fopen(FILE_PATH, "r");
+    if (file == NULL) {
+        perror("File not found exception.");
+        return 1;
+        fgets(line, sizeof(line), file);
+    }  
+    
+    
     // Lê cada linha do arquivo e processa
     while (fgets(line, sizeof(line), file)) {
+        
         // Mapeia a linha CSV para um objeto Character
         Character *character = csvLine_mapper(line);
+        if(strcmp(codigo,character->id)==0){
 
         // Adiciona o personagem ao array, aumentando a capacidade se necessário
         if (characterCount >= characterCapacity) {
@@ -282,9 +304,12 @@ int main() {
         // Armazena o personagem no array
         characterArray[characterCount++] = character;
     }
-
+        }
+    //le dnv
+    scanf("%s",codigo);
     // Fecha o arquivo após a leitura
     fclose(file);
+    }
 
     // Ordena o array de personagens pelo nome usando Selection Sort
     selection_sort_by_name(characterArray, characterCount);

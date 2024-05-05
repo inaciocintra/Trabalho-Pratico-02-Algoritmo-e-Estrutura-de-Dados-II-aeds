@@ -238,23 +238,42 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
-void selection_sort_by_name(Character **characters, int count) {
-    for (int i = 0; i < count - 1; i++) {
-        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
-        int minIndex = i;
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
-                minIndex = j;
-            }
-        }
-        // Troca o personagem com o menor nome com o personagem em i
-        if (minIndex != i) {
+void shell_sort_by_eyeColour(Character **characters, int count) {
+    // Define a sequência de gaps (intervalos) com base no tamanho do array
+    for (int gap = count / 2; gap > 0; gap /= 2) {
+        // Realiza a ordenação por inserção com base nos gaps
+        for (int i = gap; i < count; i++) {
             Character *temp = characters[i];
-            characters[i] = characters[minIndex];
-            characters[minIndex] = temp;
+            int j;
+
+            // Move os personagens para as posições corretas com base na cor dos olhos e nome
+            for (j = i; j >= gap; j -= gap) {
+                // Critério de desempate
+                // Primeiro compara eyeColour
+                int cmp_eyeColour = strcmp(characters[j - gap]->eyeColour, temp->eyeColour);
+                if (cmp_eyeColour > 0) {
+                    // Se eyeColour é maior, mova para a frente
+                    characters[j] = characters[j - gap];
+                } else if (cmp_eyeColour == 0) {
+                    // Se eyeColour é igual, desempate pelo nome
+                    int cmp_name = strcmp(characters[j - gap]->name, temp->name);
+                    if (cmp_name > 0) {
+                        // Se o nome é maior, mova para a frente
+                        characters[j] = characters[j - gap];
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // Insere o personagem atual na posição correta
+            characters[j] = temp;
         }
     }
 }
+
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
@@ -312,7 +331,8 @@ int main() {
     }
 
     // Ordena o array de personagens pelo nome usando Selection Sort
-    selection_sort_by_name(characterArray, characterCount);
+    shell_sort_by_eyeColour(characterArray, characterCount);
+    
 
     // Imprime todos os personagens armazenados em ordem alfabética de nome
     for (int i = 0; i < characterCount; i++) {

@@ -238,23 +238,76 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
-void selection_sort_by_name(Character **characters, int count) {
-    for (int i = 0; i < count - 1; i++) {
-        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
-        int minIndex = i;
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
-                minIndex = j;
-            }
+
+
+// Função para realizar o Counting Sort por um caractere específico
+void counting_sort_by_char(Character **characters, int count, int pos) {
+    int base = 256; // Considerando a base ASCII
+    int countArray[base];
+    Character **sortedCharacters = (Character **)malloc(count * sizeof(Character *));
+    if (!sortedCharacters) {
+        perror("Erro na alocação de memória para sortedCharacters");
+        return;
+    }
+    memset(countArray, 0, sizeof(countArray)); // Inicializa o array de contagem
+
+    // Contagem das ocorrências de cada caractere na posição pos
+    for (int i = 0; i < count; i++) {
+        int charIndex = characters[i]->id[pos];
+        countArray[charIndex]++;
+    }
+
+    // Calcula as posições acumuladas
+    for (int i = 1; i < base; i++) {
+        countArray[i] += countArray[i - 1];
+    }
+
+    // Coloca os personagens em ordem de acordo com o caractere na posição pos
+    for (int i = count - 1; i >= 0; i--) {
+        int charIndex = characters[i]->id[pos];
+        sortedCharacters[--countArray[charIndex]] = characters[i];
+    }
+
+    // Copia os personagens ordenados de volta para o array original
+    for (int i = 0; i < count; i++) {
+        characters[i] = sortedCharacters[i];
+    }
+
+    // Libera a memória alocada para sortedCharacters
+    free(sortedCharacters);
+}
+
+// Função para realizar Radix Sort por ID e desempatar pelo nome
+void radix_sort_by_id_and_name(Character **characters, int count) {
+    // Encontra o tamanho máximo do ID
+    int maxIdLength = 0;
+    for (int i = 0; i < count; i++) {
+        int len = strlen(characters[i]->id);
+        if (len > maxIdLength) {
+            maxIdLength = len;
         }
-        // Troca o personagem com o menor nome com o personagem em i
-        if (minIndex != i) {
-            Character *temp = characters[i];
-            characters[i] = characters[minIndex];
-            characters[minIndex] = temp;
+    }
+
+    // Ordena por ID do último caractere para o primeiro
+    for (int pos = maxIdLength - 1; pos >= 0; pos--) {
+        counting_sort_by_char(characters, count, pos);
+    }
+
+    // Desempata por nome caso o ID seja igual
+    for (int i = 0; i < count - 1; i++) {
+        if (strcmp(characters[i]->id, characters[i + 1]->id) == 0) {
+            // Os IDs são iguais, vamos ordenar por nome
+            if (strcmp(characters[i]->name, characters[i + 1]->name) > 0) {
+                // Troca os personagens se o nome for maior
+                Character *aux = characters[i];
+                characters[i] = characters[i + 1];
+                characters[i + 1] = aux;
+            }
         }
     }
 }
+
+
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
@@ -312,7 +365,8 @@ int main() {
     }
 
     // Ordena o array de personagens pelo nome usando Selection Sort
-    selection_sort_by_name(characterArray, characterCount);
+    radix_sort_by_id_and_name(characterArray, characterCount);
+    
 
     // Imprime todos os personagens armazenados em ordem alfabética de nome
     for (int i = 0; i < characterCount; i++) {

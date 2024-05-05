@@ -238,6 +238,30 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
+void binary(Character **characters, char *codigo, int count) {
+bool resp = false;
+int dir = count - 1, esq = 0, meio;
+while (esq <= dir) {
+meio = (esq + dir) / 2;
+ if (strcmp(characters[meio]->name,codigo)==0){
+resp = true;
+printf("SIM\n"); 
+ esq = count + 5 ;
+ } else if (strcmp(codigo,characters[meio]->name)>0){
+ esq = meio + 1;
+ } else {
+ dir = meio - 1;
+} 
+}
+if (!resp)
+{
+printf("NAO\n");    
+}
+
+
+    
+}
+
 void selection_sort_by_name(Character **characters, int count) {
     for (int i = 0; i < count - 1; i++) {
         // Encontra o índice do personagem com o menor nome no subarray de i a count-1
@@ -255,6 +279,7 @@ void selection_sort_by_name(Character **characters, int count) {
         }
     }
 }
+
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
@@ -277,10 +302,8 @@ int main() {
         perror("File not found exception.");
         return 1;
         fgets(line, sizeof(line), file);
+
     }  
-    
-    
-    // Lê cada linha do arquivo e processa
     while (fgets(line, sizeof(line), file)) {
         
         // Mapeia a linha CSV para um objeto Character
@@ -303,6 +326,7 @@ int main() {
 
         // Armazena o personagem no array
         characterArray[characterCount++] = character;
+        
     }
         }
     //le dnv
@@ -310,14 +334,25 @@ int main() {
     // Fecha o arquivo após a leitura
     fclose(file);
     }
-
     // Ordena o array de personagens pelo nome usando Selection Sort
     selection_sort_by_name(characterArray, characterCount);
 
-    // Imprime todos os personagens armazenados em ordem alfabética de nome
-    for (int i = 0; i < characterCount; i++) {
-        print_character(characterArray[i]);
+    fgets(codigo,sizeof(codigo), stdin);
+    codigo[strlen(codigo)-1] = '\0';
+
+    while (strcmp(codigo,"FIM")!=0)
+    {
+      binary(characterArray, codigo,characterCount);
+    //le dnv
+    fgets(codigo,sizeof(codigo), stdin);
+    codigo[strlen(codigo)-1] = '\0';
+    
     }
+
+    // busca binaria
+
+     // Imprime todos os personagens armazenados em ordem alfabética de nome
+    
 
     // Libera a memória alocada para personagens
     for (int i = 0; i < characterCount; i++) {

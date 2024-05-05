@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 
 
+
 class Personagem {
     
     //-----atributos personagem-----
@@ -322,12 +323,13 @@ class Personagem {
     
 
 
- class Ex07{
-    public static void ordenacaoInsercao(Personagem[] personagens) {
+ class Ex16{ 
+
+    public static void insercaoparcial(Personagem[] personagens, int k) {
         // Algoritmo de ordenação por inserção
         for (int i = 1; i < personagens.length; i++) {
             Personagem atual = personagens[i];
-            int j = i - 1;
+            int j = (i < k) ? i - 1 : k - 1;
 
             // Compara o personagem atual com os anteriores
             while (j >= 0 && (personagens[i]!=null) && compararPersonagens(personagens[j], atual) > 0) {
@@ -354,6 +356,11 @@ class Personagem {
         }
     }
 
+   
+    
+    
+
+   
     
     
     
@@ -412,9 +419,9 @@ class Personagem {
         reader.close();
     } 
     
-    
-    ordenacaoInsercao(personagens);
-    for(int i = 0; i<j; i++){
+    int k = 10;
+    insercaoparcial(personagens,k);
+    for(int i = 0; i<k; i++){
         personagens[i].imprime();
     }
 }

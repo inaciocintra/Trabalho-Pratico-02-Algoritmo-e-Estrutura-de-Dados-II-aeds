@@ -238,23 +238,58 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
-void selection_sort_by_name(Character **characters, int count) {
+void bubble_sort_by_hairColour_and_name(Character **characters, int count) {
+    // Iterar pelo array várias vezes
     for (int i = 0; i < count - 1; i++) {
-        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
-        int minIndex = i;
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
-                minIndex = j;
+        // Percorrer o array a partir do início até count - i - 1
+        for (int j = 0; j < count - i - 1; j++) {
+            // Comparar as cores do cabelo (`hairColour`)
+            // Se `hairColour` de `characters[j]` é `NULL` e `characters[j + 1]` não é `NULL`,
+            // o personagem `characters[j]` deve ser colocado no início.
+            if (characters[j]->hairColour == NULL && characters[j + 1]->hairColour != NULL) {
+                // Troca os personagens para mover `characters[j]` para o início
+                Character *aux = characters[j];
+                characters[j] = characters[j + 1];
+                characters[j + 1] = aux;
+            } else {
+                // Comparar `hairColour` se ambos não forem `NULL`
+                int cmp_hairColour = 0;
+                if (characters[j]->hairColour != NULL && characters[j + 1]->hairColour != NULL) {
+                    cmp_hairColour = strcmp(characters[j]->hairColour, characters[j + 1]->hairColour);
+                }
+                
+                // Se `hairColour` de `characters[j]` é maior, troque os personagens
+                if (cmp_hairColour > 0) {
+                    Character *aux = characters[j];
+                    characters[j] = characters[j + 1];
+                    characters[j + 1] = aux;
+                } else if (cmp_hairColour == 0) {
+                    // Se `hairColour` é igual, desempate pelo nome (`name`)
+                    int cmp_name = strcmp(characters[j]->name, characters[j + 1]->name);
+                    if (cmp_name > 0) {
+                        // Se `name` de `characters[j]` é maior, troque os personagens
+                        Character *aux = characters[j];
+                        characters[j] = characters[j + 1];
+                        characters[j + 1] = aux;
+                    }
+                }
             }
         }
-        // Troca o personagem com o menor nome com o personagem em i
-        if (minIndex != i) {
-            Character *temp = characters[i];
-            characters[i] = characters[minIndex];
-            characters[minIndex] = temp;
-        }
     }
+    // Agora, mova o penúltimo elemento para a primeira posição
+    // Pegue o penúltimo elemento
+    Character *penultimo = characters[count - 2];
+
+    // Desloque os elementos do início até a posição do penúltimo elemento
+    for (int i = count - 2; i > 0; i--) {
+        characters[i] = characters[i - 1];
+    }
+
+    // Coloque o penúltimo elemento na primeira posição
+    characters[0] = penultimo;
+
 }
+
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
@@ -311,8 +346,9 @@ int main() {
     fclose(file);
     }
 
-    // Ordena o array de personagens pelo nome usando Selection Sort
-    selection_sort_by_name(characterArray, characterCount);
+    // Ordena o array de personagens pelo nome usando bolha
+    bubble_sort_by_hairColour_and_name(characterArray, characterCount);
+    
 
     // Imprime todos os personagens armazenados em ordem alfabética de nome
     for (int i = 0; i < characterCount; i++) {

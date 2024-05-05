@@ -238,23 +238,112 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
-void selection_sort_by_name(Character **characters, int count) {
-    for (int i = 0; i < count - 1; i++) {
-        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
-        int minIndex = i;
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
-                minIndex = j;
-            }
-        }
-        // Troca o personagem com o menor nome com o personagem em i
-        if (minIndex != i) {
-            Character *temp = characters[i];
-            characters[i] = characters[minIndex];
-            characters[minIndex] = temp;
-        }
+
+
+// Função para realizar o Counting Sort por um caractere específico
+void counting_sort_by_char(Character **characters, int count, int pos) {
+    int base = 256; // Considerando a base ASCII
+    int countArray[base];
+    Character **sortedCharacters = (Character **)malloc(count * sizeof(Character *));
+    if (!sortedCharacters) {
+        perror("Erro na alocação de memória para sortedCharacters");
+        return;
+    }
+    memset(countArray, 0, sizeof(countArray)); // Inicializa o array de contagem
+
+    // Contagem das ocorrências de cada caractere na posição pos
+    for (int i = 0; i < count; i++) {
+        int charIndex = characters[i]->id[pos];
+        countArray[charIndex]++;
+    }
+
+    // Calcula as posições acumuladas
+    for (int i = 1; i < base; i++) {
+        countArray[i] += countArray[i - 1];
+    }
+
+    // Coloca os personagens em ordem de acordo com o caractere na posição pos
+    for (int i = count - 1; i >= 0; i--) {
+        int charIndex = characters[i]->id[pos];
+        sortedCharacters[--countArray[charIndex]] = characters[i];
+    }
+
+    // Copia os personagens ordenados de volta para o array original
+    for (int i = 0; i < count; i++) {
+        characters[i] = sortedCharacters[i];
+    }
+
+    // Libera a memória alocada para sortedCharacters
+    free(sortedCharacters);
+}
+
+// Função para realizar Radix Sort por ID e desempatar pelo nome
+
+
+// Função para reorganizar o heap
+void heapify(Character **characters, int count, int root, int (*compare)(Character*, Character*)) {
+    int largest = root; // O maior é inicialmente a raiz
+    int left = 2 * root + 1; // Índice do filho à esquerda
+    int right = 2 * root + 2; // Índice do filho à direita
+
+    // Verifica se o filho à esquerda é maior que a raiz
+    if (left < count && compare(characters[left], characters[largest]) > 0) {
+        largest = left;
+    }
+
+    // Verifica se o filho à direita é maior que o maior até agora
+    if (right < count && compare(characters[right], characters[largest]) > 0) {
+        largest = right;
+    }
+
+    // Se o maior não é a raiz, troca e continua a heapificar
+    if (largest != root) {
+        Character *temp = characters[root];
+        characters[root] = characters[largest];
+        characters[largest] = temp;
+
+        // Heapifica o sub-heap afetado
+        heapify(characters, count, largest, compare);
     }
 }
+
+// Função para comparar dois personagens com base em hairColour e desempatar por nome
+int compare_characters(Character *a, Character *b) {
+    // Primeiro compara hairColour
+    if (a->hairColour == NULL && b->hairColour != NULL) {
+        return -1;
+    } else if (a->hairColour != NULL && b->hairColour == NULL) {
+        return 1;
+    } else if (a->hairColour != NULL && b->hairColour != NULL) {
+        int cmp_hairColour = strcmp(a->hairColour, b->hairColour);
+        if (cmp_hairColour != 0) {
+            return cmp_hairColour;
+        }
+    }
+
+    // Se hairColour é igual, desempate por nome
+    return strcmp(a->name, b->name);
+}
+
+// Função Heap Sort para ordenar o array de personagens
+void heap_sort_by_hairColour_and_name(Character **characters, int count) {
+    // Construir um heap maximo a partir do array de personagens
+    for (int i = count / 2 - 1; i >= 0; i--) {
+        heapify(characters, count, i, compare_characters);
+    }
+
+    // Extrair elementos do heap um a um
+    for (int i = count - 1; i > 0; i--) {
+        // Mova a raiz para o final
+        Character *temp = characters[0];
+        characters[0] = characters[i];
+        characters[i] = temp;
+
+        // Heapifica a raiz do heap reduzido
+        heapify(characters, i, 0, compare_characters);
+    }
+}
+
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
@@ -311,11 +400,12 @@ int main() {
     fclose(file);
     }
 
-    // Ordena o array de personagens pelo nome usando Selection Sort
-    selection_sort_by_name(characterArray, characterCount);
+    // Ordena o array de personagens pelo nome usando heap
+    heap_sort_by_hairColour_and_name(characterArray, characterCount);
+    
 
     // Imprime todos os personagens armazenados em ordem alfabética de nome
-    for (int i = 0; i < characterCount; i++) {
+    for (int i = 0; i < 10; i++) {
         print_character(characterArray[i]);
     }
 

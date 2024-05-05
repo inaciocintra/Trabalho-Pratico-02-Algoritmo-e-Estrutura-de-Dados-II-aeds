@@ -238,27 +238,58 @@ void print_character(Character *character) {
     printf("]\n");
 }
 
-void selection_sort_by_name(Character **characters, int count) {
-    for (int i = 0; i < count - 1; i++) {
-        // Encontra o índice do personagem com o menor nome no subarray de i a count-1
-        int minIndex = i;
-        for (int j = i + 1; j < count; j++) {
-            if (strcmp(characters[j]->name, characters[minIndex]->name) < 0) {
-                minIndex = j;
+// Função para particionar o array
+int partition(Character **characters, int low, int high) {
+    // Escolhe o último elemento como pivot
+    Character *pivot = characters[high];
+    int i = low - 1;
+
+    // Realiza a comparação com o pivot
+    for (int j = low; j < high; j++) {
+        // Primeiro compara as casas (house)
+        int cmp_house = strcmp(characters[j]->house, pivot->house);
+        if (cmp_house < 0) {
+            // Se house é menor, incrementa i e troca os elementos
+            i++;
+            Character *temp = characters[i];
+            characters[i] = characters[j];
+            characters[j] = temp;
+        } else if (cmp_house == 0) {
+            // Se house é igual, desempate pelo nome
+            int cmp_name = strcmp(characters[j]->name, pivot->name);
+            if (cmp_name < 0) {
+                i++;
+                Character *temp = characters[i];
+                characters[i] = characters[j];
+                characters[j] = temp;
             }
         }
-        // Troca o personagem com o menor nome com o personagem em i
-        if (minIndex != i) {
-            Character *temp = characters[i];
-            characters[i] = characters[minIndex];
-            characters[minIndex] = temp;
-        }
+    }
+
+    // Coloca o pivot na posição correta
+    Character *temp = characters[i + 1];
+    characters[i + 1] = characters[high];
+    characters[high] = temp;
+
+    // Retorna a posição final do pivot
+    return i + 1;
+}
+
+// Função recursiva para aplicar o Quick Sort
+void quick_sort_by_house_and_name(Character **characters, int low, int high) {
+    if (low < high) {
+        // Particiona o array
+        int pi = partition(characters, low, high);
+
+        // Ordena as duas metades
+        quick_sort_by_house_and_name(characters, low, pi - 1);
+        quick_sort_by_house_and_name(characters, pi + 1, high);
     }
 }
 
 // Função principal que lê o arquivo CSV, processa cada linha, ordena e imprime personagens
 int main() {
-    // Abre o arquivo CSV para leitura
+    
     
 
     // Inicializa um array de personagens com alocação dinâmica
@@ -311,8 +342,9 @@ int main() {
     fclose(file);
     }
 
-    // Ordena o array de personagens pelo nome usando Selection Sort
-    selection_sort_by_name(characterArray, characterCount);
+    // Ordena o array de personagens pelo nome usando quick Sort
+    
+    quick_sort_by_house_and_name(characterArray, 0, characterCount - 1);
 
     // Imprime todos os personagens armazenados em ordem alfabética de nome
     for (int i = 0; i < characterCount; i++) {
